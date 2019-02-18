@@ -1,0 +1,9 @@
+Summary
+CloseSource() Closes the Data Source to free it to be used by
+other applications.
+
+Note
+In Version 10.0 ~11.2 it is automatically called after all pages have been scanned.
+
+Use Case
+After finish scanning to close and free up scanner look at CloseSource.html
