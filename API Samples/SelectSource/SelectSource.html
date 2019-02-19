@@ -1,0 +1,29 @@
+<html>
+<head>
+<title>Hello World</title>
+<script src="Resources/dynamsoft.webtwain.initiate.js"> </script>
+<script src="Resources/dynamsoft.webtwain.config.js"> </script>
+</head>
+<body>
+<input type="button" value="Scan" onclick="AcquireImage();" />
+<div id="dwtcontrolContainer"></div>
+<script type="text/javascript">
+var DWObject;
+function Dynamsoft_OnReady() {
+DWObject = Dynamsoft.WebTwainEnv.GetWebTwain('dwtcontrolContainer');
+}
+function AcquireImage() {
+if (DWObject) {
+DWObject.RegisterEvent('OnPostAllTransfers', function () { //Listener after all scanning is done
+DWObject.DisableSource(); //Pauses the Data Source can be enabled again through EnableSource() or AcquireImage().
+});
+DWObject.SelectSource(); //Select source bring up UI
+DWObject.OpenSource();
+DWObject.IfShowUI = false;
+DWObject.Resolution = 300;
+DWObject.AcquireImage();
+}
+}
+</script>
+</body>
+</html>
