@@ -6,5 +6,6 @@ To create more samples and use cases of each API function and its usability.
 # Get Started
 Download the 30-day free trial
 https://www.dynamsoft.com/Downloads/WebTWAIN_Download.aspx
+Put resorce file in with the html to test
 Read the DynamsoftWebTWAIN Developer's Guide 
 Use the working samples to reference each API Methods, Properties, and Events starts on page 84

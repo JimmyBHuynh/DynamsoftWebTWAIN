@@ -1,4 +1,7 @@
+Summarry
 Acquireimage() starts image acquistion process returns true or false;
+
+Use Cases
 If you just want a basic scan without and error feedback look at AcquireImage.html
 If you want a scan with and error feedback and automatically setting scanner options look at AcquireImageWithAllParam.html
 If you want a scan that has error feedback but you are still able to customize scanner options look at AcquireImageWithOnlySuccessFailure
