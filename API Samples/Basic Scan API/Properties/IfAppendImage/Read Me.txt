@@ -1,0 +1,8 @@
+IfAppendImage
+Summary
+Returns or sets whether newly acquired images are inserted or appended.
+can also be used add image before or after cureent image scanned.
+
+Use Case
+InsertImageAfterCurrentImage
+InsertImageBeforeCurretnImage
