@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Use Dynamic Web TWAIN to Scan</title>
+    <script type="text/javascript" src="Resources/dynamsoft.webtwain.initiate.js"></script>
+    <script type="text/javascript" src="Resources/dynamsoft.webtwain.config.js"></script>
+</head>
+
+<body>
+    <p>This sample allows user to pick from sourcelist howevver the source is not auto picked and user has to pick source</p>
+    <select size="1" id="source" style="position: relative; width: 220px;">    </select>
+    <input type="button" value="Scan" onclick="AcquireImage();" />
+
+    <!-- dwtcontrolContainer is the default div id for Dynamic Web TWAIN control.
+    If you need to rename the id, you should also change the id in the dynamsoft.webtwain.config.js accordingly. -->
+    <div id="dwtcontrolContainer"></div>
+
+    <script type="text/javascript">
+        Dynamsoft.WebTwainEnv.RegisterEvent('OnWebTwainReady', Dynamsoft_OnReady);
+        // Register OnWebTwainReady event. This event fires as soon as Dynamic Web TWAIN is initialized and ready to be used
+
+        var DWObject;
+
+        function Dynamsoft_OnReady() {
+            DWObject = Dynamsoft.WebTwainEnv.GetWebTwain('dwtcontrolContainer');
+            if (DWObject) {
+                var count = DWObject.SourceCount+1;
+                document.getElementById("source").options.add(new Option("Make a selection", 0));
+                for (var i = 1; i < count; i++)
+                    document.getElementById("source").options.add(new Option(DWObject.GetSourceNameItems(i-1), i));
+                // Get Data Source names from Data Source Manager and put them in a drop-down box
+            }
+        }
+        function AcquireImage() {
+            if (DWObject) {
+                var OnAcquireImageSuccess, OnAcquireImageFailure;
+                OnAcquireImageSuccess = OnAcquireImageFailure = function () {
+                    DWObject.CloseSource();
+                };
+                if (document.getElementById("source").selectedIndex != 0){
+                DWObject.SelectSourceByIndex(document.getElementById("source").selectedIndex); //Use method SelectSourceByIndex to avoid the 'Select Source' dialog
+                DWObject.OpenSource();
+                DWObject.IfDisableSourceAfterAcquire = true;	// Scanner source will be disabled/closed automatically after the scan.
+                DWObject.AcquireImage(OnAcquireImageSuccess, OnAcquireImageFailure);
+            }}
+        }
+    </script>
+</body>
+
+</html>
