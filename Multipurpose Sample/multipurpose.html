@@ -1,0 +1,365 @@
+<html>
+
+<head>
+    <title>Hello World</title>
+    <script src="Resources/dynamsoft.webtwain.initiate.js"> </script>
+    <script src="Resources/dynamsoft.webtwain.config.js"> </script>
+    <style>
+        .inline-block-child {
+            display: inline-block;
+            vertical-align: top;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="parent">
+        <div class='child inline-block-child'>
+            <div id="dwtcontrolContainer"></div>
+           <center> <p id="p1"></p></center>
+        </div>
+
+        <div class='child inline-block-child'>
+            <b>Set View Mode</b>
+            <br>
+            <select size="1" id="SetViewMode" onchange="SetViewMode();">
+                <option value="0">1X1</option>
+                <option value="1">2X2</option>
+                <option value="2">3X3</option>
+                <option value="3">4X4</option>
+                <option value="4">5X5</option>
+            </select>
+            <br>
+            <b>Scan</b>
+            <br>
+            <input type="button" value="ScanWithUI" onclick="ScanWithUI();" />
+            <input type="button" value="ScanWithOutUI" onclick="ScanWithoutUI();" />
+            <br>
+            <b>Load</b>
+            <br>
+            <input type="button" value="Load Image" onclick="LoadImage();" />
+            <input type="button" value="Load Image From Clipboard" onclick="LoadImageFromClipboard();" />
+            <input type="button" value="Load Image From Base64" onclick="LoadImageFromBase64Binary();" />
+            <br>
+            <b>Scanner Settings</b>
+            <br>
+            <table>
+                <tr>
+                    <td>Source: <select size="1" onchange="UpdateInfo()" id="source"
+                            style="position: relative; width: 200px;"> </select></td>
+                    <td>PixelType: <select size="1" id="bitdepth" style="position: relative; width: 200px;"> </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>DPI: <select size="1" id="dpi" style="position: relative; width: 200px;"> </select> </td>
+                    <td>ImageWidth: <select size="1" id="imagewidth" style="position: relative; width: 200px;">
+                        </select></td>
+                </tr>
+                <tr>
+                    <td> Autofeeder: <select size="1" id="dpi" style="position: relative; width: 200px;"> </select>
+                    </td>
+                    <td> Duplex: <select size="1" id="imagewidth" style="position: relative; width: 200px;"> </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td> Resolution: <select size="1" id="resolution" style="position: relative; width: 200px;">
+                        </select> </td>
+                    <td> AppendImage: <select size="1" id="dpi" style="position: relative; width: 200px;"> </select>
+                    </td>
+                </tr>
+            </table>
+            <b>Editor</b>
+            <br>
+            <input type="button" value="Show Image Editor" onclick="ShowImageEditor()">
+            <br>
+            <b>Image Removal</b>
+            <br>
+            <input type="button" value="Remove Images" onclick="RemoveImage()">
+            <input type="button" value="Remove Selected Images" onclick="RemoveSelectedImage()">
+            <input type="button" value="Remove All Images" onclick="RemoveAllImage()">
+            <input type="button" value="Remove Blank Images" onclick="RemoveBlankImage()">
+            <br>
+            <b>Image Orientation</b>
+            <br>
+            <input type="button" value="Rotate Left" onclick="RotateLeft()">
+            <input type="button" value="Rotate Right" onclick="RotateRight()">
+            <input type="button" value="Flip" onclick="Flip()">
+            <input type="button" value="Mirror" onclick="Mirror()">
+            <br>
+            <b>Image Manipulation</b>
+            <br>
+            <input type="button" value="Add Text" onclick="AddText()">
+            <input type="button" value="Erase" onclick="Erase()">
+            <input type="button" value="Crop" onclick="Crop()">
+            <br>
+            <b>Color Conversion</b>
+            <br>
+            <input type="button" value="Convert To Gray Scale" onclick="ConvertToGrayScale()">
+            <input type="button" value="Convert To Black And White" onclick="ConvertToBW()">
+            <input type="button" value="Convert To Color" onclick="ConvertToColor()">
+            <br>
+            <b>Copying</b>
+            <br>
+            <input type="button" value="Cut To Clipboard" onclick="CutToClipBoard()">
+            <input type="button" value="Copy To Clipboard" onclick="CopyToClipBoard()">
+            <input type="button" value="Crop To Clipboard" onclick="CropToClipBoard()">
+            <br>
+            <b>Saving</b>
+            <br>
+            <input type="button" value="Save As PDF" onclick="SaveAsPDF()">
+            <input type="button" value="Save As JPEG" onclick="SaveAsJPEG()">
+            <input type="button" value="Save As PNG" onclick="SaveAsPNG()">
+            <input type="button" value="Save As BMP" onclick="SaveAsBMP()">
+            <input type="button" value="Save As TIFF" onclick="SaveAsTIFF()">
+            <input type="button" value="Save As Base64" onclick="SaveAsBase64()">
+            <br>
+
+            <input type="button" value="Save All As PDF" onclick="SaveAllAsPDF()">
+            <input type="button" value="Save All As TIFF" onclick="SaveAllAsTIFF()">
+        </div>
+
+    </div>
+
+
+    <script type="text/javascript">
+        var DWObject;
+        function Dynamsoft_OnReady() {
+            DWObject = Dynamsoft.WebTwainEnv.GetWebTwain('dwtcontrolContainer');
+            if (DWObject) {
+                var count = DWObject.SourceCount + 1;
+                document.getElementById("source").options.add(new Option("Make a selection", 0));
+                for (var i = 1; i < count; i++)
+                    document.getElementById("source").options.add(new Option(DWObject.GetSourceNameItems(i - 1), i));
+                // Get Data Source names from Data Source Manager and put them in a drop-down box
+            }
+
+        }
+        function UpdateInfo() {
+
+            if (DWObject) {
+                DWObject.SelectSourceByIndex(document.getElementById("source").selectedIndex - 1);
+                DWObject.OpenSource();
+                DWObject.Capability = EnumDWT_Cap.ICAP_XRESOLUTION;  //  capability  X-Resolution
+                DWObject.CapGet();
+                if (DWObject.CapGet() == true) {
+                    for (var index = 0; index < DWObject.CapNumItems; index++) {
+                        var capitem = DWObject.GetCapItems(index); //get each supported DPI value
+                        document.getElementById("resolution").options[index] = new Option(capitem, index);
+                    }
+                }
+                else {
+                    var source = document.getElementById("resolution").options.length;
+                    for (var i = source; i >= 0; i--) {
+                        document.getElementById("resolution").remove(i);
+                    }
+                }
+                DWObject.CloseSource();
+            }
+        }
+        //optionalAsyncSuccessFunc
+    function AsyncSuccessFunc() {
+        LoadInformation();
+    console.log('successful'); //log if successful
+    }
+    //optionalAsyncFailureFunc
+    function AsyncFailureFunc(errorCode, errorString) {
+    alert(errorString); // open new window alert with error message if failure
+    }
+
+        function ScanWithUI() {
+            if (DWObject) {
+                DWObject.SelectSource(function () {
+                    DWObject.OpenSource();
+                    DWObject.AcquireImage(AsyncSuccessFunc,AsyncFailureFunc);
+                },
+                    function () { console.log("SelectSource failed!"); });
+            }
+        }
+        function ScanWithoutUI() {
+            if (DWObject) {
+                if (document.getElementById("source").selectedIndex != 0) {
+                    DWObject.SelectSourceByIndex(document.getElementById("source").selectedIndex - 1); //Select Source
+                    DWObject.OpenSource();
+                    DWObject.AcquireImage();
+                }
+                else {
+                    alert("Pick a source");
+                }
+            }
+        }
+        function ShowImageEditor() {
+            if (DWObject) {
+                DWObject.ShowImageEditor();
+            }
+        }
+        function RemoveImage() {
+            if (DWObject) {
+                DWObject.RemoveImage(DWObject.CurrentImageIndexInBuffer);
+            }
+        }
+        function RemoveSelectedImage() {
+            if (DWObject) {
+                DWObject.RemoveAllSelectedImages();
+            }
+        }
+        function RemoveAllImage() {
+            if (DWObject) {
+                DWObject.RemoveAllImages();
+            }
+        }
+        function RemoveBlankImage() {
+            DWObject.BlankImageMaxStdDev = 20;
+            if (DWObject.IsBlankImageExpress(DWObject.CurrentImageIndexInBuffer)) {
+                DWObject.RemoveImage(DWObject.CurrentImageIndexInBuffer);
+            }
+        }
+        function SetViewMode() {
+            if (DWObject) {
+                var o = parseInt(document.getElementById("SetViewMode").selectedIndex + 1);
+                DWObject.SetViewMode(o, o);
+            }
+        }
+        function Mirror() {
+            if (DWObject) {
+                DWObject.Mirror(DWObject.CurrentImageIndexInBuffer);
+            }
+        }
+        function RotateRight() {
+            if (DWObject) {
+                DWObject.RotateRight(DWObject.CurrentImageIndexInBuffer);
+            }
+        }
+        function RotateLeft() {
+            if (DWObject) {
+                DWObject.RotateLeft(DWObject.CurrentImageIndexInBuffer);
+            }
+        }
+        function Flip() {
+            if (DWObject) {
+                DWObject.Flip(DWObject.CurrentImageIndexInBuffer);
+            }
+        }
+        function ConvertToGrayScale() {
+            if (DWObject) {
+                DWObject.ConvertToGrayScale(DWObject.CurrentImageIndexInBuffer);
+            }
+        }
+        function CopyToClipBoard() {
+            if (DWObject) {
+                DWObject.CopyToClipboard(DWObject.CurrentImageIndexInBuffer);
+            }
+        }
+        function CutToClipBoard() {
+            if (DWObject) {
+                DWObject.CutToClipboard(DWObject.CurrentImageIndexInBuffer);
+            }
+        }
+        function SaveAsPDF() {
+            if (DWObject) {
+                if (DWObject.HowManyImagesInBuffer == 0) {
+                    alert("No images in buffer.");
+                    return;
+                }
+                DWObject.SaveAsPDF("C:\\test.pdf", DWObject.CurrentImageIndexInBuffer);
+            }
+        }
+        function SaveAsBMP() {
+            if (DWObject) {
+                if (DWObject.HowManyImagesInBuffer == 0) {
+                    alert("No images in buffer.");
+                    return;
+                }
+                DWObject.SaveAsBMP("C:\\test.pdf", DWObject.CurrentImageIndexInBuffer);
+            }
+        }
+        function SaveAsPNG() {
+            if (DWObject) {
+                if (DWObject.HowManyImagesInBuffer == 0) {
+                    alert("No images in buffer.");
+                    return;
+                }
+                DWObject.SaveAsPNG("C:\\test.pdf", DWObject.CurrentImageIndexInBuffer);
+            }
+        }
+        function SaveAsTIFF() {
+            if (DWObject) {
+                if (DWObject.HowManyImagesInBuffer == 0) {
+                    alert("No images in buffer.");
+                    return;
+                }
+                DWObject.SaveAsTIFF("C:\\test.pdf", DWObject.CurrentImageIndexInBuffer);
+            }
+        }
+        function SaveAsJPEG() {
+            if (DWObject) {
+                if (DWObject.HowManyImagesInBuffer == 0) {
+                    alert("No images in buffer.");
+                    return;
+                }
+                DWObject.SaveAsJPEG("C:\\test.pdf", DWObject.CurrentImageIndexInBuffer);
+            }
+        }
+        function SaveAllAsTIFF() {
+            if (DWObject) {
+                if (DWObject.HowManyImagesInBuffer == 0) {
+                    alert("No images in buffer.");
+                    return;
+                }
+                DWObject.SaveAsAllAsMultiPageTIFF("C:\\test.pdf");
+            }
+        }
+        function SaveAllAsPDF() {
+            if (DWObject) {
+                if (DWObject.HowManyImagesInBuffer == 0) {
+                    alert("No images in buffer.");
+                    return;
+                }
+                DWObject.SaveAllAsPDF("C:\\test.pdf");
+            }
+        }
+        function LoadImage() {
+            if (DWObject) {
+                DWObject.IfShowFileDialog = true;
+                DWObject.LoadImageEx("", EnumDWT_ImageType.IT_ALL);
+            }
+        }
+        function LoadImageFromClipboard() {
+            if (DWObject) {
+                DWObject.LoadDibFromClipboard();
+            }
+        }
+        function LoadImageFromBase64Binary() {
+            if (DWObject) {
+                var imagedata;
+                DWObject.SelectedImagesCount = 1;
+                DWObject.SetSelectedImageIndex(0, 0);
+                DWObject.GetSelectedImagesSize(EnumDWT_ImageType.IT_JPG);
+                imagedata = DWObject.SaveSelectedImagesToBase64Binary();
+                DWObject.LoadImageFromBase64Binary(imagedata, EnumDWT_ImageType.IT_JPG, function () {
+                    console.log('success');
+                }, function () {
+                    console.log('failure');
+                });
+            }
+        }
+        function LoadInformation(){
+            if (DWObject) {
+            var ResolutionX = DWObject.GetImageXResolution(DWObject.CurrentImageIndexInBuffer); 
+            var ResolutionY = DWObject.GetImageYResolution(DWObject.CurrentImageIndexInBuffer);
+            var ImageHeight = DWObject.GetImageHeight(DWObject.CurrentImageIndexInBuffer);
+            var ImageWidth = DWObject.GetImageWidth(DWObject.CurrentImageIndexInBuffer);
+            var ImageSize = DWObject.GetImageSize(DWObject.CurrentImageIndexInBuffer,ImageWidth,ImageHeight);
+            var PixelType = DWObject.PixelType; 
+            var PageSize = DWObject.PageSize;
+            var Brightness = DWObject.Brightness;
+            var Contrast = DWObject.Contrast;
+            var IsBlank = DWObject.IsBlankImageExpress(DWObject.CurrentImageIndexInBuffer);
+            document.getElementById("p1").innerHTML = "Image Information: <br>Resolution: " 
+            + ResolutionX + " x "+ResolutionY + "<br>PixelType: " + PixelType + "<br>Page Size: " + PageSize
+            + "<br>Brightness: " + Brightness + "<br>Contrast: " + Contrast + "<br>IsBlank: " + IsBlank
+            + "<br>Height: " + ImageHeight + "px <br>Width: " + ImageWidth + "px <br> Size: " + ImageSize + "bytes";
+        }}
+    </script>
+</body>
+
+</html>
