@@ -8,6 +8,7 @@
         .inline-block-child {
             display: inline-block;
             vertical-align: top;
+
         }
     </style>
 </head>
@@ -16,7 +17,6 @@
     <div class="parent">
         <div class='child inline-block-child'>
             <div id="dwtcontrolContainer"></div>
-           <center> <p id="p1"></p></center>
         </div>
 
         <div class='child inline-block-child'>
@@ -35,39 +35,27 @@
             <input type="button" value="ScanWithUI" onclick="ScanWithUI();" />
             <input type="button" value="ScanWithOutUI" onclick="ScanWithoutUI();" />
             <br>
-            <b>Load</b>
-            <br>
-            <input type="button" value="Load Image" onclick="LoadImage();" />
-            <input type="button" value="Load Image From Clipboard" onclick="LoadImageFromClipboard();" />
-            <input type="button" value="Load Image From Base64" onclick="LoadImageFromBase64Binary();" />
-            <br>
             <b>Scanner Settings</b>
             <br>
             <table>
                 <tr>
                     <td>Source: <select size="1" onchange="UpdateInfo()" id="source"
                             style="position: relative; width: 200px;"> </select></td>
-                    <td>PixelType: <select size="1" id="bitdepth" style="position: relative; width: 200px;"> </select>
-                    </td>
-                </tr>
-                <tr>
-                    <td>DPI: <select size="1" id="dpi" style="position: relative; width: 200px;"> </select> </td>
-                    <td>ImageWidth: <select size="1" id="imagewidth" style="position: relative; width: 200px;">
-                        </select></td>
-                </tr>
-                <tr>
-                    <td> Autofeeder: <select size="1" id="dpi" style="position: relative; width: 200px;"> </select>
-                    </td>
-                    <td> Duplex: <select size="1" id="imagewidth" style="position: relative; width: 200px;"> </select>
-                    </td>
+
                 </tr>
                 <tr>
                     <td> Resolution: <select size="1" id="resolution" style="position: relative; width: 200px;">
                         </select> </td>
-                    <td> AppendImage: <select size="1" id="dpi" style="position: relative; width: 200px;"> </select>
+                    <td>PixelType: <select size="1" id="pixeltype" style="position: relative; width: 200px;"> </select>
                     </td>
                 </tr>
             </table>
+            <b>Load</b>
+            <br>
+            <input type="button" value="Load Image" onclick="LoadImage();" />
+            <input type="button" value="Load Image From Clipboard" onclick="LoadImageFromClipboard();" />
+            <input type="button" value="Load Image From Base64" onclick="LoadImageFromBase64Binary();" />
+            <br>
             <b>Editor</b>
             <br>
             <input type="button" value="Show Image Editor" onclick="ShowImageEditor()">
@@ -117,7 +105,14 @@
             <input type="button" value="Save All As PDF" onclick="SaveAllAsPDF()">
             <input type="button" value="Save All As TIFF" onclick="SaveAllAsTIFF()">
         </div>
+        <div class='child inline-block-child'
+            style="border-style: solid; border-width: 1px; width: 200px; height: 480px;">
+            Information:
+            <br>
+            <p style="margin-left:10px;" id="p1">Image Details: </p>
+            <p style="margin-left:10px;" id="p2">Scanner Details: </p>
 
+        </div>
     </div>
 
 
@@ -126,11 +121,19 @@
         function Dynamsoft_OnReady() {
             DWObject = Dynamsoft.WebTwainEnv.GetWebTwain('dwtcontrolContainer');
             if (DWObject) {
+                DWObject.Width = "340px";
+                DWObject.Height = "480px";
                 var count = DWObject.SourceCount + 1;
                 document.getElementById("source").options.add(new Option("Make a selection", 0));
                 for (var i = 1; i < count; i++)
                     document.getElementById("source").options.add(new Option(DWObject.GetSourceNameItems(i - 1), i));
                 // Get Data Source names from Data Source Manager and put them in a drop-down box
+                DWObject.RegisterEvent('OnImageAreaSelected', function (sImageIndex, left, top, right, bottom) {
+                    ileft = left;
+                    iright = right;
+                    itop = top;
+                    ibottom = bottom;
+                });
             }
 
         }
@@ -154,23 +157,42 @@
                     }
                 }
                 DWObject.CloseSource();
+                DWObject.SelectSourceByIndex(document.getElementById("source").selectedIndex - 1);
+                DWObject.OpenSource();
+                DWObject.Capability = EnumDWT_Cap.ICAP_PIXELTYPE;  //  capability  X-Resolution
+                DWObject.CapGet();
+                if (DWObject.CapGet() == true) {
+                    document.getElementById("pixeltype").options[0] = new Option("Black and White", 0);
+                    document.getElementById("pixeltype").options[1] = new Option("Grayscale", 1);
+                    document.getElementById("pixeltype").options[2] = new Option("RGB", 2);
+                }
+                else {
+                    var source = document.getElementById("pixeltype").options.length;
+                    for (var i = source; i >= 0; i--) {
+                        document.getElementById("pixeltype").remove(i);
+                    }
+                }
+                DWObject.CloseSource();
+
+
+
             }
         }
         //optionalAsyncSuccessFunc
-    function AsyncSuccessFunc() {
-        LoadInformation();
-    console.log('successful'); //log if successful
-    }
-    //optionalAsyncFailureFunc
-    function AsyncFailureFunc(errorCode, errorString) {
-    alert(errorString); // open new window alert with error message if failure
-    }
+        function AsyncSuccessFunc() {
+            LoadImageInformation();
+            console.log('successful'); //log if successful
+        }
+        //optionalAsyncFailureFunc
+        function AsyncFailureFunc(errorCode, errorString) {
+            alert(errorString); // open new window alert with error message if failure
+        }
 
         function ScanWithUI() {
             if (DWObject) {
                 DWObject.SelectSource(function () {
                     DWObject.OpenSource();
-                    DWObject.AcquireImage(AsyncSuccessFunc,AsyncFailureFunc);
+                    DWObject.AcquireImage(AsyncSuccessFunc, AsyncFailureFunc);
                 },
                     function () { console.log("SelectSource failed!"); });
             }
@@ -180,7 +202,15 @@
                 if (document.getElementById("source").selectedIndex != 0) {
                     DWObject.SelectSourceByIndex(document.getElementById("source").selectedIndex - 1); //Select Source
                     DWObject.OpenSource();
-                    DWObject.AcquireImage();
+                    DWObject.IfShowUI = false;
+                    var e = document.getElementById("resolution");
+                    var value = e.options[e.selectedIndex].text;
+                    var r = document.getElementById("pixeltype");
+                    var valuer = r.options[r.selectedIndex].value;
+                    DWObject.Resolution = value;
+                    DWObject.PixelType = valuer;
+                    console.log(value);
+                    DWObject.AcquireImage(AsyncSuccessFunc, AsyncFailureFunc);
                 }
                 else {
                     alert("Pick a source");
@@ -242,6 +272,11 @@
         function ConvertToGrayScale() {
             if (DWObject) {
                 DWObject.ConvertToGrayScale(DWObject.CurrentImageIndexInBuffer);
+            }
+        }
+        function ConvertToBW() {
+            if (DWObject) {
+                DWObject.ChangeBitDepth(DWObject.CurrentImageIndexInBuffer, 1, true);   
             }
         }
         function CopyToClipBoard() {
@@ -342,23 +377,53 @@
                 });
             }
         }
-        function LoadInformation(){
+        function LoadImageInformation() {
             if (DWObject) {
-            var ResolutionX = DWObject.GetImageXResolution(DWObject.CurrentImageIndexInBuffer); 
-            var ResolutionY = DWObject.GetImageYResolution(DWObject.CurrentImageIndexInBuffer);
-            var ImageHeight = DWObject.GetImageHeight(DWObject.CurrentImageIndexInBuffer);
-            var ImageWidth = DWObject.GetImageWidth(DWObject.CurrentImageIndexInBuffer);
-            var ImageSize = DWObject.GetImageSize(DWObject.CurrentImageIndexInBuffer,ImageWidth,ImageHeight);
-            var PixelType = DWObject.PixelType; 
-            var PageSize = DWObject.PageSize;
-            var Brightness = DWObject.Brightness;
-            var Contrast = DWObject.Contrast;
-            var IsBlank = DWObject.IsBlankImageExpress(DWObject.CurrentImageIndexInBuffer);
-            document.getElementById("p1").innerHTML = "Image Information: <br>Resolution: " 
-            + ResolutionX + " x "+ResolutionY + "<br>PixelType: " + PixelType + "<br>Page Size: " + PageSize
-            + "<br>Brightness: " + Brightness + "<br>Contrast: " + Contrast + "<br>IsBlank: " + IsBlank
-            + "<br>Height: " + ImageHeight + "px <br>Width: " + ImageWidth + "px <br> Size: " + ImageSize + "bytes";
-        }}
+                var ResolutionX = DWObject.GetImageXResolution(DWObject.CurrentImageIndexInBuffer);
+                var ResolutionY = DWObject.GetImageYResolution(DWObject.CurrentImageIndexInBuffer);
+                var ImageHeight = DWObject.GetImageHeight(DWObject.CurrentImageIndexInBuffer);
+                var ImageWidth = DWObject.GetImageWidth(DWObject.CurrentImageIndexInBuffer);
+                var ImageSize = DWObject.GetImageSize(DWObject.CurrentImageIndexInBuffer, ImageWidth, ImageHeight);
+                var PixelType = DWObject.PixelType;
+                var PageSize = DWObject.PageSize;
+                var Brightness = DWObject.Brightness;
+                var Contrast = DWObject.Contrast;
+                var IsBlank = DWObject.IsBlankImageExpress(DWObject.CurrentImageIndexInBuffer);
+                document.getElementById("p1").innerHTML = "Image Details: <br>Resolution: "
+                    + ResolutionX + " x " + ResolutionY + "<br>PixelType: " + PixelType + "<br>Page Size: " + PageSize
+                    + "<br>Brightness: " + Brightness + "<br>Contrast: " + Contrast + "<br>IsBlank: " + IsBlank
+                    + "<br>Height: " + ImageHeight + "px <br>Width: " + ImageWidth + "px <br> Size: " + ImageSize + "bytes";
+                LoadScannerInformation();
+            }
+        }
+        function LoadScannerInformation() {
+            if (DWObject) {
+                DWObject.SelectSourceByIndex(document.getElementById("source").selectedIndex - 1);
+                var Manufacturer = DWObject.GetDeviceType();
+                document.getElementById("p2").innerHTML = "Scanner Details: <br>Device Type: "
+                    + Manufacturer;
+            }
+        }
+
+        function Crop() {
+            if (ileft != 0 || itop != 0 || iright != 0 || ibottom != 0) {
+                DWObject.Crop(DWObject.CurrentImageIndexInBuffer, ileft, itop, iright, ibottom);
+                ileft = 0;
+                iright = 0;
+                itop = 0;
+                ibottom = 0;
+            }
+        }
+        function CropToClipBoard()
+        {
+            if (ileft != 0 || itop != 0 || iright != 0 || ibottom != 0) {
+                DWObject.CropToClipBoard(DWObject.CurrentImageIndexInBuffer, ileft, itop, iright, ibottom);
+                ileft = 0;
+                iright = 0;
+                itop = 0;
+                ibottom = 0;
+            }
+        }
     </script>
 </body>
 
