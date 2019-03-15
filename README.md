@@ -12,8 +12,9 @@ Navigate to C:\Program Files (x86)\Dynamsoft\Dynamic Web TWAIN SDK 14.3.1 Trial
 Copy and paste resource file in with the html samples to test
 
 # For More Resources
-Read the DynamsoftWebTWAIN Developer's Guide 
-Use the working samples to reference each API Methods, Properties, and Events starts on page 84
+- Read the DynamsoftWebTWAIN Developer's Guide 
+  Use the working samples to reference each API Methods, Properties, and Events starts on page 84
+- The Knowledge Base and Use Case document will contain a list of questions found in Dyanmsoft Knowledge Base along with some use case problems encounter from developer or clients.
 
 # Glossary
 API samples will reference eash api method, event and properties and some ways to use them in code
