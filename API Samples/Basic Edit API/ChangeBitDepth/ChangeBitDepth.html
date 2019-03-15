@@ -1,0 +1,37 @@
+<html>
+<head>
+<title>Hello World</title>
+<script src="Resources/dynamsoft.webtwain.initiate.js"> </script>
+<script src="Resources/dynamsoft.webtwain.config.js"> </script>
+</head>
+<body>
+<input type="button" value="Scan" onclick="AcquireImage();" /> <!--onClick AcquireImage() Func is called-->
+<div id="dwtcontrolContainer"></div>
+<script type="text/javascript">
+var DWObject;
+function Dynamsoft_OnReady() {
+DWObject = Dynamsoft.WebTwainEnv.GetWebTwain('dwtcontrolContainer');
+}
+
+//optionalAsyncSuccessFunc
+function AsyncSuccessFunc() {
+DWObject.ChangeBitDepth(DWObject.CurrentImageIndexInBuffer, 1, true);
+console.log('successful'); //log if successful
+}
+//optionalAsyncFailureFunc
+function AsyncFailureFunc(errorCode, errorString) {
+alert(errorString); // open new window alert with error message if failure
+}
+
+function AcquireImage() {
+if (DWObject) {
+DWObject.SelectSource(function () {
+DWObject.OpenSource();
+DWObject.AcquireImage(AsyncSuccessFunc,AsyncFailureFunc); //Success and Failure Functions are passed in the parameters
+},
+function () {console.log("SelectSource failed!"); });
+}
+}
+</script>
+</body>
+</html>
