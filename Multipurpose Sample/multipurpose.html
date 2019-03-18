@@ -4,6 +4,9 @@
     <title>Hello World</title>
     <script src="Resources/dynamsoft.webtwain.initiate.js"> </script>
     <script src="Resources/dynamsoft.webtwain.config.js"> </script>
+    <script src="DBRResources/dynamsoft.barcodereader.config.js"> </script>
+    <script src="DBRResources/dynamsoft.barcodereader.initiate.js"> </script>
+
     <style>
         .inline-block-child {
             display: inline-block;
@@ -34,6 +37,9 @@
             <br>
             <input type="button" value="ScanWithUI" onclick="ScanWithUI();" />
             <input type="button" value="ScanWithOutUI" onclick="ScanWithoutUI();" />
+            <input type="button" value="ReadBarcode" onclick="ReadBarcode();" />
+            <input type="button" value="HTTPDownload" onclick="HTTPDownload();" />
+
             <br>
             <b>Scanner Settings</b>
             <br>
@@ -106,18 +112,43 @@
             <input type="button" value="Save All As TIFF" onclick="SaveAllAsTIFF()">
         </div>
         <div class='child inline-block-child'
-            style="border-style: solid; border-width: 1px; width: 200px; height: 480px;">
-            Information:
-            <br>
-            <p style="margin-left:10px;" id="p1">Image Details: </p>
-            <p style="margin-left:10px;" id="p2">Scanner Details: </p>
-
+            style="border-style: solid; border-width: 1px; width: 200px; height: 480px; overflow: scroll;">
+            Image Details: 
+            <p style="margin-left:10px;" id="p1"></p>
+            Scanner Details: 
+            <p style="margin-left:10px;" id="p2"></p>
+            Barcode Details:
+            <p style="margin-left:10px;" id="p3"></p>
         </div>
     </div>
 
 
     <script type="text/javascript">
-        var DWObject;
+        var dbrObject, DWObject;
+       
+        window.onload = function () {
+        if (Dynamsoft && (!Dynamsoft.Lib.env.bWin || !Dynamsoft.Lib.product.bChromeEdition)) {
+            var ObjString = [];
+            ObjString.push('<div class="p15">');
+            ObjString.push("Current browser is not supported, please use Chrome, Firefox, Edge or IE 11");
+            ObjString.push('</div>');
+            Dynamsoft.WebTwainEnv.ShowDialog(400, 180, ObjString.join(''));
+            if (document.getElementsByClassName("dynamsoft-dialog-close"))
+                document.getElementsByClassName("dynamsoft-dialog-close")[0].style.display = "none";
+        } else {
+            Dynamsoft.WebTwainEnv.Load();
+        }
+    };
+    Dynamsoft.WebTwainEnv.AutoLoad = false;
+    Dynamsoft.WebTwainEnv.RegisterEvent('OnWebTwainReady', Dynamsoft_OnReady);
+    dynamsoft.dbrEnv.onAutoConnectServiceSuccess = function() {
+        dbrObject = new dynamsoft.BarcodeReader();
+    }
+
+    dynamsoft.dbrEnv.onAutoConnectServiceError = function(ex) {
+        console.log('Initialization failed with error code: ' + (ex.message || ex));
+    }
+        
         function Dynamsoft_OnReady() {
             DWObject = Dynamsoft.WebTwainEnv.GetWebTwain('dwtcontrolContainer');
             if (DWObject) {
@@ -178,6 +209,41 @@
 
             }
         }
+        function ReadBarcode() {
+    var j, sImageIndex = DWObject.CurrentImageIndexInBuffer;
+    if (dbrObject) {
+        var settings = dbrObject.getRuntimeSettings();
+        settings.mBarcodeFormatIds = 503317503;//All Barcode Formats
+        dbrObject.updateRuntimeSettings(settings);
+        var barcodeImage = DWObject.GetImageURL(sImageIndex, -1, -1);
+        dbrObject.decode(barcodeImage).then(function (results) {
+            if (results.length == 0) {
+                document.getElementById('p3').innerHTML = "The barcode for the selected format is not found.";
+            } else {
+                barcodeText = [];
+						for (i = 0; i < results.length; i++) {
+							var result = results[i];
+							Barcode_text = result.BarcodeText;
+                			var loc = result.LocalizationResult;
+							var x = loc.X1;
+							var y = loc.Y1;
+							var format = result.BarcodeFormatString;
+							barcodeText.push("barcode[" + (i + 1) + "]: " + "<br /><strong>" + Barcode_text + "</strong><br />");
+							barcodeText.push("format:" + format + "<br />");
+							barcodeText.push("x:" + x + "y:" + y + "<br />");
+							barcodeText.push("------------------------------<br />");
+						}
+
+						barcodeText.splice(0, 0, '<p style="padding:5px; margin:0;">');
+						barcodeText.push('</p>');
+						document.getElementById('p3').innerHTML = barcodeText.join('');
+            }
+        }, function (ex) {
+            console.log("Error reading barcode: " + ex.message);
+            Dynamsoft.Lib.hideMask();
+        });
+    }
+}
         //optionalAsyncSuccessFunc
         function AsyncSuccessFunc() {
             LoadImageInformation();
@@ -186,6 +252,11 @@
         //optionalAsyncFailureFunc
         function AsyncFailureFunc(errorCode, errorString) {
             alert(errorString); // open new window alert with error message if failure
+        }
+        function HTTPDownload() {
+            if (DWObject) {
+                DWObject.HTTPDownload('docs.herculesfreight.com','//TiffImages/2019/201903/20190304/773325//773325-10099.tif',AsyncSuccessFunc,AsyncFailureFunc); 
+            }
         }
 
         function ScanWithUI() {
@@ -389,7 +460,7 @@
                 var Brightness = DWObject.Brightness;
                 var Contrast = DWObject.Contrast;
                 var IsBlank = DWObject.IsBlankImageExpress(DWObject.CurrentImageIndexInBuffer);
-                document.getElementById("p1").innerHTML = "Image Details: <br>Resolution: "
+                document.getElementById("p1").innerHTML = "Resolution: "
                     + ResolutionX + " x " + ResolutionY + "<br>PixelType: " + PixelType + "<br>Page Size: " + PageSize
                     + "<br>Brightness: " + Brightness + "<br>Contrast: " + Contrast + "<br>IsBlank: " + IsBlank
                     + "<br>Height: " + ImageHeight + "px <br>Width: " + ImageWidth + "px <br> Size: " + ImageSize + "bytes";
@@ -400,7 +471,7 @@
             if (DWObject) {
                 DWObject.SelectSourceByIndex(document.getElementById("source").selectedIndex - 1);
                 var Manufacturer = DWObject.GetDeviceType();
-                document.getElementById("p2").innerHTML = "Scanner Details: <br>Device Type: "
+                document.getElementById("p2").innerHTML = "Device Type: "
                     + Manufacturer;
             }
         }
