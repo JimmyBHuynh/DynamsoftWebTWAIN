@@ -113,9 +113,9 @@
         </div>
         <div class='child inline-block-child'
             style="border-style: solid; border-width: 1px; width: 200px; height: 480px; overflow: scroll;">
-            Image Details: 
+            Image Details:
             <p style="margin-left:10px;" id="p1"></p>
-            Scanner Details: 
+            Scanner Details:
             <p style="margin-left:10px;" id="p2"></p>
             Barcode Details:
             <p style="margin-left:10px;" id="p3"></p>
@@ -125,30 +125,30 @@
 
     <script type="text/javascript">
         var dbrObject, DWObject;
-       
-        window.onload = function () {
-        if (Dynamsoft && (!Dynamsoft.Lib.env.bWin || !Dynamsoft.Lib.product.bChromeEdition)) {
-            var ObjString = [];
-            ObjString.push('<div class="p15">');
-            ObjString.push("Current browser is not supported, please use Chrome, Firefox, Edge or IE 11");
-            ObjString.push('</div>');
-            Dynamsoft.WebTwainEnv.ShowDialog(400, 180, ObjString.join(''));
-            if (document.getElementsByClassName("dynamsoft-dialog-close"))
-                document.getElementsByClassName("dynamsoft-dialog-close")[0].style.display = "none";
-        } else {
-            Dynamsoft.WebTwainEnv.Load();
-        }
-    };
-    Dynamsoft.WebTwainEnv.AutoLoad = false;
-    Dynamsoft.WebTwainEnv.RegisterEvent('OnWebTwainReady', Dynamsoft_OnReady);
-    dynamsoft.dbrEnv.onAutoConnectServiceSuccess = function() {
-        dbrObject = new dynamsoft.BarcodeReader();
-    }
 
-    dynamsoft.dbrEnv.onAutoConnectServiceError = function(ex) {
-        console.log('Initialization failed with error code: ' + (ex.message || ex));
-    }
-        
+        window.onload = function () {
+            if (Dynamsoft && (!Dynamsoft.Lib.env.bWin || !Dynamsoft.Lib.product.bChromeEdition)) {
+                var ObjString = [];
+                ObjString.push('<div class="p15">');
+                ObjString.push("Current browser is not supported, please use Chrome, Firefox, Edge or IE 11");
+                ObjString.push('</div>');
+                Dynamsoft.WebTwainEnv.ShowDialog(400, 180, ObjString.join(''));
+                if (document.getElementsByClassName("dynamsoft-dialog-close"))
+                    document.getElementsByClassName("dynamsoft-dialog-close")[0].style.display = "none";
+            } else {
+                Dynamsoft.WebTwainEnv.Load();
+            }
+        };
+        Dynamsoft.WebTwainEnv.AutoLoad = false;
+        Dynamsoft.WebTwainEnv.RegisterEvent('OnWebTwainReady', Dynamsoft_OnReady);
+        dynamsoft.dbrEnv.onAutoConnectServiceSuccess = function () {
+            dbrObject = new dynamsoft.BarcodeReader();
+        }
+
+        dynamsoft.dbrEnv.onAutoConnectServiceError = function (ex) {
+            console.log('Initialization failed with error code: ' + (ex.message || ex));
+        }
+
         function Dynamsoft_OnReady() {
             DWObject = Dynamsoft.WebTwainEnv.GetWebTwain('dwtcontrolContainer');
             if (DWObject) {
@@ -210,40 +210,40 @@
             }
         }
         function ReadBarcode() {
-    var j, sImageIndex = DWObject.CurrentImageIndexInBuffer;
-    if (dbrObject) {
-        var settings = dbrObject.getRuntimeSettings();
-        settings.mBarcodeFormatIds = 503317503;//All Barcode Formats
-        dbrObject.updateRuntimeSettings(settings);
-        var barcodeImage = DWObject.GetImageURL(sImageIndex, -1, -1);
-        dbrObject.decode(barcodeImage).then(function (results) {
-            if (results.length == 0) {
-                document.getElementById('p3').innerHTML = "The barcode for the selected format is not found.";
-            } else {
-                barcodeText = [];
-						for (i = 0; i < results.length; i++) {
-							var result = results[i];
-							Barcode_text = result.BarcodeText;
-                			var loc = result.LocalizationResult;
-							var x = loc.X1;
-							var y = loc.Y1;
-							var format = result.BarcodeFormatString;
-							barcodeText.push("barcode[" + (i + 1) + "]: " + "<br /><strong>" + Barcode_text + "</strong><br />");
-							barcodeText.push("format:" + format + "<br />");
-							barcodeText.push("x:" + x + "y:" + y + "<br />");
-							barcodeText.push("------------------------------<br />");
-						}
+            var j, sImageIndex = DWObject.CurrentImageIndexInBuffer;
+            if (dbrObject) {
+                var settings = dbrObject.getRuntimeSettings();
+                settings.mBarcodeFormatIds = 503317503;//All Barcode Formats
+                dbrObject.updateRuntimeSettings(settings);
+                var barcodeImage = DWObject.GetImageURL(sImageIndex, -1, -1);
+                dbrObject.decode(barcodeImage).then(function (results) {
+                    if (results.length == 0) {
+                        document.getElementById('p3').innerHTML = "The barcode for the selected format is not found.";
+                    } else {
+                        barcodeText = [];
+                        for (i = 0; i < results.length; i++) {
+                            var result = results[i];
+                            Barcode_text = result.BarcodeText;
+                            var loc = result.LocalizationResult;
+                            var x = loc.X1;
+                            var y = loc.Y1;
+                            var format = result.BarcodeFormatString;
+                            barcodeText.push("barcode[" + (i + 1) + "]: " + "<br /><strong>" + Barcode_text + "</strong><br />");
+                            barcodeText.push("format:" + format + "<br />");
+                            barcodeText.push("x:" + x + "y:" + y + "<br />");
+                            barcodeText.push("------------------------------<br />");
+                        }
 
-						barcodeText.splice(0, 0, '<p style="padding:5px; margin:0;">');
-						barcodeText.push('</p>');
-						document.getElementById('p3').innerHTML = barcodeText.join('');
+                        barcodeText.splice(0, 0, '<p style="padding:5px; margin:0;">');
+                        barcodeText.push('</p>');
+                        document.getElementById('p3').innerHTML = barcodeText.join('');
+                    }
+                }, function (ex) {
+                    console.log("Error reading barcode: " + ex.message);
+                    Dynamsoft.Lib.hideMask();
+                });
             }
-        }, function (ex) {
-            console.log("Error reading barcode: " + ex.message);
-            Dynamsoft.Lib.hideMask();
-        });
-    }
-}
+        }
         //optionalAsyncSuccessFunc
         function AsyncSuccessFunc() {
             LoadImageInformation();
@@ -255,7 +255,7 @@
         }
         function HTTPDownload() {
             if (DWObject) {
-                DWObject.HTTPDownload('docs.herculesfreight.com','//TiffImages/2019/201903/20190304/773325//773325-10099.tif',AsyncSuccessFunc,AsyncFailureFunc); 
+                DWObject.HTTPDownload('docs.herculesfreight.com', '//TiffImages/2019/201903/20190304/773325//773325-10099.tif', AsyncSuccessFunc, AsyncFailureFunc);
             }
         }
 
@@ -347,7 +347,7 @@
         }
         function ConvertToBW() {
             if (DWObject) {
-                DWObject.ChangeBitDepth(DWObject.CurrentImageIndexInBuffer, 1, true);   
+                DWObject.ChangeBitDepth(DWObject.CurrentImageIndexInBuffer, 1, true);
             }
         }
         function CopyToClipBoard() {
@@ -423,6 +423,21 @@
                 DWObject.SaveAllAsPDF("C:\\test.pdf");
             }
         }
+        function SaveAsBase64() {
+            if (DWObject) {
+                if (DWObject.HowManyImagesInBuffer == 0) {
+                    alert("No images in buffer.");
+                    return;
+                }
+                var imagedata;
+                DWObject.SelectedImagesCount = 1;
+                DWObject.SetSelectedImageIndex( 0,  0);
+                DWObject.GetSelectedImagesSize(EnumDWT_ImageType.IT_JPG);
+                imagedata = DWObject.SaveSelectedImagesToBase64Binary();
+                console.log(imagedata);
+            }
+        }
+
         function LoadImage() {
             if (DWObject) {
                 DWObject.IfShowFileDialog = true;
@@ -485,8 +500,7 @@
                 ibottom = 0;
             }
         }
-        function CropToClipBoard()
-        {
+        function CropToClipBoard() {
             if (ileft != 0 || itop != 0 || iright != 0 || ibottom != 0) {
                 DWObject.CropToClipBoard(DWObject.CurrentImageIndexInBuffer, ileft, itop, iright, ibottom);
                 ileft = 0;
