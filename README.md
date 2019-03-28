@@ -8,8 +8,14 @@ To create more samples and use cases of each API function and its usability.
 # Get Started
 Download the 30-day free trial
 https://www.dynamsoft.com/Downloads/WebTWAIN_Download.aspx
-Navigate to C:\Program Files (x86)\Dynamsoft\Dynamic Web TWAIN SDK 14.3.1 Trial
-Copy and paste resource file in with the html samples to test
+Navigate to C:\Program Files (x86)\Dynamsoft\Dynamic Web TWAIN SDK 14.3.1
+Copy and paste "Resources" file in with the html samples to test
+
+For Multipurpose Sample
+Navigate to C:\Program Files (x86)\Dynamsoft\Dynamic Web TWAIN SDK 14.3.1
+Copy and paste "Resources" file in with the html samples to test
+Navigate to C:\Program Files (x86)\Dynamsoft\Dynamic Web TWAIN SDK 14.3.1\Sample\Scan+Barcode
+Copy and paste "DBRResources" file in with the html samples to test
 
 # For More Resources
 - Read the DynamsoftWebTWAIN Developer's Guide 
