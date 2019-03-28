@@ -12,8 +12,10 @@ Navigate to C:\Program Files (x86)\Dynamsoft\Dynamic Web TWAIN SDK 14.3.1
 Copy and paste "Resources" file in with the html samples to test
 
 For Multipurpose Sample
+
 Navigate to C:\Program Files (x86)\Dynamsoft\Dynamic Web TWAIN SDK 14.3.1
 Copy and paste "Resources" file in with the html samples to test
+
 Navigate to C:\Program Files (x86)\Dynamsoft\Dynamic Web TWAIN SDK 14.3.1\Sample\Scan+Barcode
 Copy and paste "DBRResources" file in with the html samples to test
 
