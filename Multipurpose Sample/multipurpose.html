@@ -427,6 +427,10 @@
 
         function LoadImage() {
             if (DWObject) {
+                if (DWObject.Addon.PDF.IsModuleInstalled()) {
+					DWObject.Addon.PDF.SetResolution(200);
+					DWObject.Addon.PDF.SetConvertMode(EnumDWT_ConvertMode.CM_RENDERALL);
+				}
                 DWObject.IfShowFileDialog = true;
                 DWObject.LoadImageEx("", EnumDWT_ImageType.IT_ALL);
             }
