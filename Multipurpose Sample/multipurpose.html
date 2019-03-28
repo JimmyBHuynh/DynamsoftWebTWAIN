@@ -6,6 +6,8 @@
     <script src="Resources/dynamsoft.webtwain.config.js"> </script>
     <script src="DBRResources/dynamsoft.barcodereader.config.js"> </script>
     <script src="DBRResources/dynamsoft.barcodereader.initiate.js"> </script>
+    <script src="Resources/addon/dynamsoft.webtwain.addon.pdf.js"></script>
+    <script src="OCRResources/dynamsoft.webtwain.addon.ocr.js"> </script>
 
     <style>
         .inline-block-child {
@@ -39,6 +41,9 @@
             <input type="button" value="ScanWithOutUI" onclick="ScanWithoutUI();" />
             <input type="button" value="ReadBarcode" onclick="ReadBarcode();" />
             <input type="button" value="HTTPDownload" onclick="HTTPDownload();" />
+            <select size="1" id="ddlLanguages" class="w100p"></select>
+            <select size="1" id="ddlOCROutputFormat" class="w100p"></select>
+            <input type="button" value="OCR" onclick="DoOCR();" class="mt15 btn bgBlue w100p" />
 
             <br>
             <b>Scanner Settings</b>
@@ -119,6 +124,8 @@
             <p style="margin-left:10px;" id="p2"></p>
             Barcode Details:
             <p style="margin-left:10px;" id="p3"></p>
+            OCR:
+            <div id="divNoteMessage" ondblclick="this.innerHTML=''"> </div>
         </div>
     </div>
 
@@ -147,26 +154,6 @@
 
         dynamsoft.dbrEnv.onAutoConnectServiceError = function (ex) {
             console.log('Initialization failed with error code: ' + (ex.message || ex));
-        }
-
-        function Dynamsoft_OnReady() {
-            DWObject = Dynamsoft.WebTwainEnv.GetWebTwain('dwtcontrolContainer');
-            if (DWObject) {
-                DWObject.Width = "340px";
-                DWObject.Height = "480px";
-                var count = DWObject.SourceCount + 1;
-                document.getElementById("source").options.add(new Option("Make a selection", 0));
-                for (var i = 1; i < count; i++)
-                    document.getElementById("source").options.add(new Option(DWObject.GetSourceNameItems(i - 1), i));
-                // Get Data Source names from Data Source Manager and put them in a drop-down box
-                DWObject.RegisterEvent('OnImageAreaSelected', function (sImageIndex, left, top, right, bottom) {
-                    ileft = left;
-                    iright = right;
-                    itop = top;
-                    ibottom = bottom;
-                });
-            }
-
         }
         function UpdateInfo() {
 
@@ -510,6 +497,7 @@
             }
         }
     </script>
+        <script src="ocrbasicclientside.js"></script>
 </body>
 
 </html>

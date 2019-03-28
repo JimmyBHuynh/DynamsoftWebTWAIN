@@ -1,0 +1,133 @@
+﻿@{
+    ViewBag.Title = "Home Page";
+}
+
+<script src="@Url.Content("~/Scripts/Resources/dynamsoft.webtwain.initiate.js")" type="text/javascript"></script>
+<script src="@Url.Content("~/Scripts/Resources/dynamsoft.webtwain.config.js")" type="text/javascript"></script>
+<script src="@Url.Content("~/Scripts/Resources/addon/dynamsoft.webtwain.addon.pdf.js")" type="text/javascript"></script>
+
+<div class="jumbotron">
+    <p>
+        <input type="button" value="Scan" onclick="AcquireImage();" class="btn btn-primary btn-lg" />
+        <input type="button" value="Open a local file" onclick="LoadImages();" class="btn btn-primary btn-lg" />
+        <input type="button" value="Upload" onclick="UploadImage();" class="btn btn-primary btn-lg" />
+    </p>
+    <p>
+        <div id="dwtcontrolContainer"></div>
+    </p>
+    <script>
+        var DWObject;
+        var CurrentPathName = unescape(location.pathname),
+            CurrentPath = CurrentPathName.substring(0, CurrentPathName.lastIndexOf("/") + 1),
+            strHTTPServer = location.hostname, strActionPage;
+        Dynamsoft.WebTwainEnv.AutoLoad = false;
+
+        Dynamsoft.WebTwainEnv.RegisterEvent('OnWebTwainReady', Dynamsoft_OnReady); // Register OnWebTwainReady event. This event fires as soon as Dynamic Web TWAIN is initialized and ready to be used
+        window.onload = function () {
+            if (Dynamsoft) {
+                Dynamsoft.WebTwainEnv.Load();
+            }
+        };
+
+        function downloadPDFR() {
+            DCP_DWT_OnClickCloseInstall();
+            var strPDFPath = Dynamsoft.WebTwainEnv.ResourcesPath;
+
+            if (Dynamsoft.Lib.env.bMac)
+                strPDFPath += "/dist/mac/MacPdf.zip";
+            else if (Dynamsoft.Lib.env.bLinux)
+                strPDFPath += "/dist/linux/LinuxPdf.zip";
+            else if (Dynamsoft.Lib.env.bWin && !dynamsoft.dcp.b64bit)
+                strPDFPath += "/dist/win/Pdf.zip";
+			else if (Dynamsoft.Lib.env.bWin && dynamsoft.dcp.b64bit)
+                strPDFPath += "/dist/win/Pdfx64.zip";
+
+            DWObject.Addon.PDF.Download(
+                strPDFPath,
+                function () {
+                    console.log('PDF dll is installed');
+                },
+                function (errorCode, errorString) {
+                    console.log(errorString + ' ' + errorCode);
+                }
+            );
+        }
+
+        function Dynamsoft_OnReady() {
+            DWObject = Dynamsoft.WebTwainEnv.GetWebTwain('dwtcontrolContainer');
+            if (DWObject) {
+                DWObject.Width = 505;
+                DWObject.Height = 600;
+                if (DWObject.Addon.PDF.IsModuleInstalled()) {
+                    downloadOCRBasic_btn();
+                }
+                else {
+                    ObjString = [];
+                    ObjString.push('<div class="p15" id="pdfr-install-dlg">');
+                    ObjString.push('The <strong>PDF Rasterizer</strong> is not installed on this PC. Please click the button below to get it installed');
+                    ObjString.push('<p class="tc mt15 mb15"><input type="button" value="Install PDF Rasterizer" onclick="downloadPDFR();" class="btn lgBtn bgBlue" /><hr></p>');
+                    ObjString.push('<i><strong>The installation is a one-time process</strong> <br />It might take some time depending on your network.</i>');
+                    ObjString.push('</div>');
+                    Dynamsoft.WebTwainEnv.ShowDialog(400, 280, ObjString.join(''));
+                }
+            }
+        }
+
+        function AcquireImage() {
+            if (DWObject) {
+                DWObject.SelectSource(function () {
+                    var OnAcquireImageSuccess, OnAcquireImageFailure;
+                    OnAcquireImageSuccess = OnAcquireImageFailure = function () {
+                        DWObject.CloseSource();
+                    };
+                    DWObject.OpenSource();
+                    DWObject.IfDisableSourceAfterAcquire = true;
+                    DWObject.AcquireImage(OnAcquireImageSuccess, OnAcquireImageFailure);
+                }, function () {
+                    console.log('SelectSource failed!');
+                });
+            }
+        }
+
+        function LoadImages() {
+            if (DWObject) {
+                if (DWObject.Addon && DWObject.Addon.PDF) {
+                    DWObject.Addon.PDF.SetResolution(300);
+                    DWObject.Addon.PDF.SetConvertMode(EnumDWT_ConvertMode.CM_RENDERALL);
+                }
+                DWObject.LoadImageEx('', 5,
+                    function () {
+                    },
+                    function (errorCode, errorString) {
+                        alert('Load Image:' + errorString);
+                    }
+                );
+            }
+        }
+
+        function OnHttpUploadSuccess() {
+            console.log('successful');
+        }
+
+        function OnHttpServerReturnedSomething(errorCode, errorString, sHttpResponse) {
+            var textFromServer = sHttpResponse;
+        }
+        function upload_preparation() {
+            strActionPage = CurrentPath + '../ExtraActions/csharp.aspx';
+            DWObject.IfSSL = Dynamsoft.Lib.detect.ssl;
+            var _strPort = location.port == "" ? 80 : location.port;
+            if (Dynamsoft.Lib.detect.ssl == true)
+                _strPort = location.port == "" ? 443 : location.port;
+            DWObject.HTTPPort = _strPort;
+        }
+        function UploadImage() {
+            if (DWObject.HowManyImagesInBuffer == 0)
+                return;
+            upload_preparation();
+            var Digital = new Date();
+            var uploadfilename = Digital.getMilliseconds(); // Uses milliseconds according to local time as the file name
+
+            DWObject.HTTPUploadAllThroughPostAsPDF(strHTTPServer, strActionPage, uploadfilename + ".pdf", OnHttpUploadSuccess, OnHttpServerReturnedSomething);
+        }
+    </script>
+</div>

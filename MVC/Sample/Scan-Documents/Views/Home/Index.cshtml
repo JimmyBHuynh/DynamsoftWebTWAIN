@@ -1,0 +1,15 @@
+﻿@{
+    ViewBag.Title = "Home Page";
+}
+
+<div class="jumbotron">
+    <h1>Dynamic Web TWAIN</h1>
+    <p class="lead">
+        Dynamic Web TWAIN is a TWAIN-based scanning SDK software specifically designed for web applications.
+        With just a few lines of code, you can develop robust applications to scan documents from TWAIN-compatible scanners,
+        edit the scanned images and save them to a local/server file system or document repository.
+    </p>
+    <p>
+        @Html.ActionLink("Try It Out >>", "Scan", "Home", null, new { @class = "btn btn-primary btn-lg" })
+    </p>
+</div>
