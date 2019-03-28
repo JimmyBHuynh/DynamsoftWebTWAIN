@@ -145,7 +145,16 @@ function Dynamsoft_OnImageAreaDeselected(index) {
 function Dynamsoft_OnTopImageInTheViewChanged(index) {
 	DWObject.CurrentImageIndexInBuffer = index;
 }
-
+function Test() {
+	DWObject.SelectSource();
+	DWObject.OpenSource();
+	DWObject.Capability = EnumDWT_Cap.CAP_INDICATORS;
+	DWObject.CapGet();
+	DWObject.CapType = EnumDWT_CapType.TWON_ONEVALUE;
+	DWObject.CapValue = 0;
+	DWObject.CapSet();
+	DWObject.AcquireImage();
+	}
 function AcquireImage() {
 	if (DWObject) {
 		DWObject.SelectSource(function () {

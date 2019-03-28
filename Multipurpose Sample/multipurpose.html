@@ -37,16 +37,20 @@
             <br>
             <b>Scan</b>
             <br>
-            <input type="button" value="ScanWithUI" onclick="ScanWithUI();" />
-            <input type="button" value="ScanWithOutUI" onclick="ScanWithoutUI();" />
+            <input type="button" value="Scan" onclick="ScanWithUI();" />
             <input type="button" value="ReadBarcode" onclick="ReadBarcode();" />
             <input type="button" value="HTTPDownload" onclick="HTTPDownload();" />
-            <select size="1" id="ddlLanguages" class="w100p"></select>
-            <select size="1" id="ddlOCROutputFormat" class="w100p"></select>
+            <br><b>OCR</b><br>
             <input type="button" value="OCR" onclick="DoOCR();" class="mt15 btn bgBlue w100p" />
+            <br>
+            Language: <select size="1" id="ddlLanguages" class="w100p"></select>
+            Output: <select size="1" id="ddlOCROutputFormat" class="w100p"></select>
+
 
             <br>
-            <b>Scanner Settings</b>
+            <b>Scanner Without UI</b>
+            <br>
+            <input type="button" value="Scan" onclick="ScanWithoutUI();" />
             <br>
             <table>
                 <tr>
@@ -102,6 +106,8 @@
             <input type="button" value="Cut To Clipboard" onclick="CutToClipBoard()">
             <input type="button" value="Copy To Clipboard" onclick="CopyToClipBoard()">
             <input type="button" value="Crop To Clipboard" onclick="CropToClipBoard()">
+
+            <input type="button" value="test" onclick="Test()">
             <br>
             <b>Saving</b>
             <br>
@@ -116,17 +122,19 @@
             <input type="button" value="Save All As PDF" onclick="SaveAllAsPDF()">
             <input type="button" value="Save All As TIFF" onclick="SaveAllAsTIFF()">
         </div>
-        <div class='child inline-block-child'
-            style="border-style: solid; border-width: 1px; width: 200px; height: 480px; overflow: scroll;">
-            Image Details:
-            <p style="margin-left:10px;" id="p1"></p>
-            Scanner Details:
-            <p style="margin-left:10px;" id="p2"></p>
-            Barcode Details:
-            <p style="margin-left:10px;" id="p3"></p>
-            OCR:
-            <div id="divNoteMessage" ondblclick="this.innerHTML=''"> </div>
+        <div class='hello'
+            style="border-style: solid; border-width: 1px; width: 504px; height: 254px; overflow: scroll;">
+            <center>
+                <br>
+                <b><u>Results</u></b></br>
+                <p style="margin-left:10px;" id="p1"></p>
+                <p style="margin-left:10px;" id="p2"></p>
+                <p style="margin-left:10px;" id="p3"></p>
+                OCR:
+                <div id="divNoteMessage" ondblclick="this.innerHTML=''"> </div>
+            </center>
         </div>
+
     </div>
 
 
@@ -196,6 +204,7 @@
 
             }
         }
+
         function ReadBarcode() {
             var j, sImageIndex = DWObject.CurrentImageIndexInBuffer;
             if (dbrObject) {
@@ -208,6 +217,7 @@
                         document.getElementById('p3').innerHTML = "The barcode for the selected format is not found.";
                     } else {
                         barcodeText = [];
+                        barcodeText.push("Barcode Details: <br>");
                         for (i = 0; i < results.length; i++) {
                             var result = results[i];
                             Barcode_text = result.BarcodeText;
@@ -242,7 +252,7 @@
         }
         function HTTPDownload() {
             if (DWObject) {
-                DWObject.HTTPDownload('docs.herculesfreight.com', '//TiffImages/2019/201903/20190304/773325//773325-10099.tif', AsyncSuccessFunc, AsyncFailureFunc);
+                DWObject.HTTPDownload('https://i.imgur.com/', '1zGRchZ.png', AsyncSuccessFunc, AsyncFailureFunc);
             }
         }
 
@@ -261,6 +271,7 @@
                     DWObject.SelectSourceByIndex(document.getElementById("source").selectedIndex - 1); //Select Source
                     DWObject.OpenSource();
                     DWObject.IfShowUI = false;
+                    DWObject.IfShowIndicator = false;
                     var e = document.getElementById("resolution");
                     var value = e.options[e.selectedIndex].text;
                     var r = document.getElementById("pixeltype");
@@ -418,7 +429,7 @@
                 }
                 var imagedata;
                 DWObject.SelectedImagesCount = 1;
-                DWObject.SetSelectedImageIndex( 0,  0);
+                DWObject.SetSelectedImageIndex(0, 0);
                 DWObject.GetSelectedImagesSize(EnumDWT_ImageType.IT_JPG);
                 imagedata = DWObject.SaveSelectedImagesToBase64Binary();
                 console.log(imagedata);
@@ -428,9 +439,9 @@
         function LoadImage() {
             if (DWObject) {
                 if (DWObject.Addon.PDF.IsModuleInstalled()) {
-					DWObject.Addon.PDF.SetResolution(200);
-					DWObject.Addon.PDF.SetConvertMode(EnumDWT_ConvertMode.CM_RENDERALL);
-				}
+                    DWObject.Addon.PDF.SetResolution(200);
+                    DWObject.Addon.PDF.SetConvertMode(EnumDWT_ConvertMode.CM_RENDERALL);
+                }
                 DWObject.IfShowFileDialog = true;
                 DWObject.LoadImageEx("", EnumDWT_ImageType.IT_ALL);
             }
@@ -466,7 +477,7 @@
                 var Brightness = DWObject.Brightness;
                 var Contrast = DWObject.Contrast;
                 var IsBlank = DWObject.IsBlankImageExpress(DWObject.CurrentImageIndexInBuffer);
-                document.getElementById("p1").innerHTML = "Resolution: "
+                document.getElementById("p1").innerHTML = "<b>Image Detail:<br></b>Resolution: "
                     + ResolutionX + " x " + ResolutionY + "<br>PixelType: " + PixelType + "<br>Page Size: " + PageSize
                     + "<br>Brightness: " + Brightness + "<br>Contrast: " + Contrast + "<br>IsBlank: " + IsBlank
                     + "<br>Height: " + ImageHeight + "px <br>Width: " + ImageWidth + "px <br> Size: " + ImageSize + "bytes";
@@ -477,7 +488,7 @@
             if (DWObject) {
                 DWObject.SelectSourceByIndex(document.getElementById("source").selectedIndex - 1);
                 var Manufacturer = DWObject.GetDeviceType();
-                document.getElementById("p2").innerHTML = "Device Type: "
+                document.getElementById("p2").innerHTML = "Scanner Details:<br>Device Type: "
                     + Manufacturer;
             }
         }
@@ -501,7 +512,7 @@
             }
         }
     </script>
-        <script src="ocrbasicclientside.js"></script>
+    <script src="ocrbasicclientside.js"></script>
 </body>
 
 </html>
